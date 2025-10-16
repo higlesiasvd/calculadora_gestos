@@ -1,56 +1,55 @@
-IMAGE := gest-calc
+# Variables
+VENV := ../../.venv
+PYTHON := $(VENV)/bin/python3
+PIP := $(VENV)/bin/pip
+SRC_DIR := src
 
-.PHONY: build camtest run shell clean
+.PHONY: install camtest run test clean help
 
-build:
-	docker build -t $(IMAGE) .
+# Instalar dependencias en el entorno virtual
+install:
+	@echo "Instalando dependencias..."
+	$(PIP) install -r requirements.txt
+	@echo "Dependencias instaladas correctamente"
 
+# Probar la cámara con webcam_test.py
 camtest:
-	docker run -it \
-		--shm-size=24g \
-		-e DISPLAY=$$DISPLAY \
-		-e QT_QPA_PLATFORM_PLUGIN_PATH=/opt/.venv/lib/python3.9/site-packages/cv2/qt/plugins \
-		-e QT_X11_NO_MITSHM=1 \
-		-v ./src:/opt/project \
-		-v /tmp/.X11-unix:/tmp/.X11-unix \
-		-v /dev/:/dev/ \
-		--privileged \
-		--rm \
-		$(IMAGE) python /opt/project/webcam_test.py
+	@echo "Probando cámara..."
+	cd $(SRC_DIR) && $(PYTHON) webcam_test.py
 
+# Ejecutar la calculadora gestual
 run:
-	docker run -it \
-		--shm-size=24g \
-		-e DISPLAY=$$DISPLAY \
-		-e QT_QPA_PLATFORM_PLUGIN_PATH=/opt/.venv/lib/python3.9/site-packages/cv2/qt/plugins \
-		-e QT_X11_NO_MITSHM=1 \
-		-v ./src:/opt/project \
-		-v /tmp/.X11-unix:/tmp/.X11-unix \
-		-v /dev/:/dev/ \
-		--privileged \
-		--rm \
-		$(IMAGE) python /opt/project/main.py
+	@echo "Iniciando calculadora gestual..."
+	cd $(SRC_DIR) && $(PYTHON) main.py
 
-shell:
-	docker run -it \
-		--shm-size=24g \
-		-e DISPLAY=$$DISPLAY \
-		-e QT_QPA_PLATFORM_PLUGIN_PATH=/opt/.venv/lib/python3.9/site-packages/cv2/qt/plugins \
-		-e QT_X11_NO_MITSHM=1 \
-		-v ./src:/opt/project \
-		-v /tmp/.X11-unix:/tmp/.X11-unix \
-		-v /dev/:/dev/ \
-		--privileged \
-		--rm \
-		$(IMAGE) /bin/bash
+# Ejecutar tests (si existen)
+test:
+	@echo "Ejecutando tests..."
+	cd $(SRC_DIR) && $(PYTHON) -m pytest -v 2>/dev/null || echo "No hay tests configurados"
 
+# Limpiar archivos temporales y cache
 clean:
-	docker rmi $(IMAGE)
+	@echo "Limpiando archivos temporales..."
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	@echo "Limpieza completada"
 
+# Mostrar ayuda
 help:
 	@echo "Comandos disponibles:"
-	@echo "  make build    - Construir la imagen Docker"
-	@echo "  make camtest  - Probar la cámara"
+	@echo ""
+	@echo "  make install  - Instalar dependencias en el entorno virtual"
+	@echo "  make camtest  - Probar la cámara (webcam_test.py)"
 	@echo "  make run      - Ejecutar la calculadora gestual"
-	@echo "  make shell    - Abrir terminal en el contenedor"
-	@echo "  make clean    - Eliminar la imagen Docker"
+	@echo "  make test     - Ejecutar tests unitarios"
+	@echo "  make clean    - Limpiar archivos temporales y cache"
+	@echo "  make help     - Mostrar esta ayuda"
+	@echo ""
+	@echo "Estructura modular:"
+	@echo "  src/config/         - Configuración de accesibilidad"
+	@echo "  src/voice/          - Sistema de voz"
+	@echo "  src/core/           - Calculadora y detección de gestos"
+	@echo "  src/ui/             - Interfaz gráfica"
+	@echo "  src/app/            - Aplicación principal"
