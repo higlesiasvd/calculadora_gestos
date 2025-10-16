@@ -1,0 +1,4 @@
+opencv-python==4.8.1.78
+numpy==1.24.3
+mediapipe
+# Importante: numpy debe ser <2 para compatibilidad con opencv-python 4.8.x
