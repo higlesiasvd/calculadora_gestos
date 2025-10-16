@@ -138,7 +138,7 @@ class GestureDetector:
     
     def count_extended_fingers(self, landmarks):
         """
-        Cuenta dedos extendidos con MÁXIMA precisión usando validación basada en distancias.
+        Cuenta dedos extendidos con precisión usando validación basada en distancias.
         
         Args:
             landmarks (list): Lista de 21 landmarks de una mano
@@ -285,18 +285,13 @@ class GestureDetector:
     
     def is_hand_horizontal(self, landmarks):
         """
-        Detecta si la mano está orientada horizontalmente - MEJORADO con validación de tips.
+        Detecta si la mano está orientada horizontalmente.
         
         Args:
             landmarks (list): 21 landmarks de una mano
             
         Returns:
             bool: True si la mano está en posición horizontal
-            
-        Criterios mejorados:
-            1. Extensión horizontal (X) debe ser 1.8x mayor que vertical (Y)
-            2. Las puntas de los dedos deben estar niveladas (y_diff < 50px)
-            3. Validación desde muñeca hasta dedo medio
             
         Aplicación:
             - Gesto de resta: Requiere 4 dedos horizontales (sin pulgar)
@@ -332,17 +327,6 @@ class GestureDetector:
         Returns:
             bool: True si las manos forman una cruz perpendicular MUY precisa
             
-        Algoritmo MEJORADO para diferenciar de multiplicación:
-            1. Usa dedo medio como referencia (más estable que índice)
-            2. Calcula vectores desde muñeca hasta punta del medio
-            3. Calcula ángulo real entre vectores usando producto punto
-            4. ESTRICTO: Solo acepta 80-100° (muy cerca de 90° perpendicular)
-            5. Distancia MUY cercana: < 150px (deben tocarse casi)
-            6. NUEVO: Valida que una mano sea horizontal y otra vertical
-            
-        Diferencias con multiplicación (X):
-            - SUMA: Ángulo 80-100° (ESTRICTO), distancia < 150px, orientación ortogonal
-            - MULT: Ángulo 40-140° (amplio), distancia < 200px, cruce diagonal
         """
         if len(landmarks_1) < 21 or len(landmarks_2) < 21:
             return False
@@ -397,7 +381,7 @@ class GestureDetector:
     
     def hands_form_x(self, landmarks_1, landmarks_2):
         """
-        Detecta si dos dedos índice forman una 'X' (para multiplicación) - MEJORADO con validación de cruce.
+        Detecta si dos dedos índice forman una 'X' (para multiplicación) con validación de cruce.
         
         Args:
             landmarks_1 (list): Landmarks de la primera mano
@@ -563,14 +547,14 @@ class GestureDetector:
                     return "equal", "= CALCULAR", 1.0, (0, 255, 255)
             
             # ====================================================================
-            # SUMA (+): Pulgar e índice extendidos (gesto "L") - NUEVO
+            # SUMA (+): Pulgar e índice extendidos (gesto "L")
             # Gesto simple con una sola mano, fácil de reconocer
             # ====================================================================
             if fingers == [1, 1, 0, 0, 0]:
                 return "add", "+ SUMA", 0.98, (0, 255, 0)
             
             # ====================================================================
-            # RESTA (-): Mano horizontal con 4 dedos (sin pulgar) - MEJORADA
+            # RESTA (-): Mano horizontal con 4 dedos (sin pulgar)
             # Valida orientación horizontal para evitar confusión con número 4
             # ====================================================================
             if fingers == [0, 1, 1, 1, 1] and self.is_hand_horizontal(landmarks):
